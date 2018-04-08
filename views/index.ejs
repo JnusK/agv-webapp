@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+    document.getElementById("robot1_button").onclick = function () {
+      location.href = "/robot1";
+  };
+    </script>
+    <style>
+      body{background: linear-gradient(to right,  #9c9e9f 0%,#f6f6f6 100%); font-family: verdana; color: #191970; padding: 30px;}
+      h1{font-size: 48px; text-align: center;}
+      h2{font-size: 30px; text-align: center;}
+      p{font-size: 16px; text-align: center;}
+      li{font-size: 16px; text-align: center; display: inline; right: 0px;}
+      .button{font-size: 40px; text-align: center; padding: 60px; margin: 20px;}
+      input[type=submit] {
+        width: 10em;
+        height: 4em;
+        font-size: 40px;
+        align-self: center;
+      }
+      form{text-align: center;}
+      .foot_button{
+        float: left;
+        width: 20%;
+        height: 30px;
+      }
+      #comments{
+        float: right;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <h1>Welcome to the Command Center</h1>
+    <form action="/robot1">
+      <input type="submit" value="Taobot" />
+    </form>
+    <% include partials/nav.ejs %>
+  </body>
+</html>

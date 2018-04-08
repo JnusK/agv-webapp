@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+
+    <script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+    <script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+    <script type="text/javascript" src="http://static.robotwebtools.org/EaselJS/current/easeljs.min.js"></script>
+    <script type="text/javascript" src="http://static.robotwebtools.org/ros2djs/current/ros2d.min.js"></script>
+    <script type="text/javascript" src="http://static.robotwebtools.org/nav2djs/current/nav2d.min.js"></script>
+
+    <script type="text/javascript" type="text/javascript">
+
+      function init() {
+        // Connect to ROS.
+        var ros = new ROSLIB.Ros({
+          url : 'ws://192.168.1.30:9090'
+        });
+
+        // Create the main viewer.
+        var viewer = new ROS2D.Viewer({
+          divID : 'nav',
+          width : 750,
+          height : 800
+        });
+
+        // Setup the nav client.
+        var nav = NAV2D.OccupancyGridClientNav({
+          ros : ros,
+          rootObject : viewer.scene,
+          viewer : viewer,
+	         serverName: '/move_base'
+         });
+       }
+
+      var ros = new ROSLIB.Ros({
+	       url : 'ws://192.168.1.30:9090'
+      });
+
+      ros.on('connection', function() {
+        console.log('Connected to websocket server.');
+      });
+
+      ros.on('error', function(error) {
+        console.log('Error connecting to websocket server: ', error);
+      });
+
+      ros.on('close', function() {
+        console.log('Connection to websocket server closed.');
+      });
+
+  // Publishing stop_cmd
+  // ------------------
+
+  var stopCmd = new ROSLIB.Topic({
+    ros : ros,
+    name : '/stop_cmd',
+    messageType : 'std_msgs/Int32'
+  });
+
+  function pressStop(){
+	  if (document.getElementById("stop_word").innerHTML === "Stop"){
+	    document.getElementById("stop_word").innerHTML = "Resume";
+	    document.getElementById("stop_button").style = "background-color:lime";
+	    var stop = new ROSLIB.Message({
+		    data : 1
+      });
+	    stopCmd.publish(stop);
+	  }
+	  else{
+	    document.getElementById("stop_word").innerHTML = "Stop";
+	    document.getElementById("stop_button").style = "background-color:red";
+	    var stop = new ROSLIB.Message({
+		    data : 0
+      });
+	    stopCmd.publish(stop);
+	  }
+  }
+
+  // Publishing tow_cmd
+  // ------------------
+
+  var towCmd = new ROSLIB.Topic({
+    ros : ros,
+    name : '/tow_cmd',
+    messageType : 'std_msgs/Int32'
+  });
+
+  function pressTow(){
+	  if (document.getElementById("tow_word").innerHTML === "Tow"){
+	    document.getElementById("tow_word").innerHTML = "Drop Off";
+	    var tow = new ROSLIB.Message({
+		    data : 1
+      });
+	    towCmd.publish(tow);
+	  }
+	  else{
+	    document.getElementById("tow_word").innerHTML = "Tow";
+	    var tow = new ROSLIB.Message({
+		    data : 0
+      });
+	    towCmd.publish(tow);
+	  }
+  }
+
+
+  // Subscribing to taobot_listener
+  // ----------------------
+
+  var taobotVoltageListener = new ROSLIB.Topic({
+    ros : ros,
+    name : '/taobot_voltage_listener',
+    messageType : 'std_msgs/Float32'
+  });
+
+  taobotVoltageListener.subscribe(function(message) {
+    console.log('Received message on ' + taobotVoltageListener.name + ': ' + message.data);
+	  var batt = (message.data-22)/3*100;
+    //batt = 60.955;
+    if (batt<0){
+      batt=0.00;
+    }
+    else if (batt>100){
+      batt=100.00;
+    }
+	  document.getElementById("battery_text").innerHTML = batt.toFixed(1).toString()+"%";
+    document.getElementById("battery_level").style.width = batt.toFixed(1).toString() + "%";
+    if (batt>90){
+      document.getElementById("battery_level").style.backgroundColor = "#66CD00";
+    }
+    else if (batt>30){
+      document.getElementById("battery_level").style.backgroundColor = "#FCD116";
+    }
+    else {
+      document.getElementById("battery_level").style.backgroundColor = "#FF3333";
+    }
+    listener.unsubscribe();
+  });
+
+  </script>
+  <style>
+	.button {
+	  font-size: 24px;
+	}
+	.stopbutton {
+	  border-radius: 20%;
+	}
+	.towbutton {
+	  border-radius: 20%;
+	}
+  .battery:after {
+    background-color: #fff;
+    border: 2px solid #000;
+    content: "";
+    display: block;
+    height: 14px;
+    position: absolute;
+    right: -12px;
+    top: 6px;
+    width: 8px;
+  }
+  .battery {
+    background-color: #fff;
+    border: 2px solid #000;
+    height: 32px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    width: 100px;
+  }
+  </style>
+</head>
+
+<body onload="init()">
+  <div id="nav"></div>
+  <div id="battery_status" class="battery">
+    <div id="battery_level" style="position:absolute; background-color:#eee; height:100%; width:100%;"></div>
+    <div style="position:absolute; left:50%; margin-top:5%;">
+      <div id="battery_text" style="position:relative; color:black; left:-50%;">0.0%</div>
+    </div>
+  </div>
+  <p>
+	<button type="button" id="stop_button" class="button stopbutton" onclick="pressStop()" style="background-color:red;">
+	  <p id="stop_word">Stop</p>
+	</button>
+	<button type="button" id="tow_button" class="button towbutton" onclick="pressTow()" style="background-color:#7d90f0;">
+	  <p id="tow_word">Tow</p>
+	</button>
+  </p>
+</body>
+</html>
