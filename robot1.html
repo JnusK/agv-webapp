@@ -85,6 +85,11 @@
     name : '/tow_cmd',
     messageType : 'std_msgs/Int32'
   });
+  var actCmd = new ROSLIB.Topic({
+    ros : ros,
+    name : '/actuator',
+    messageType : 'std_msgs/Int32'
+  });
 
   function pressTow(){
 	  if (document.getElementById("tow_word").innerHTML === "Tow"){
@@ -99,7 +104,8 @@
 	    var tow = new ROSLIB.Message({
 		    data : 0
       });
-	    towCmd.publish(tow);
+	    //towCmd.publish(tow);
+      actCmd.publish(tow);
 	  }
   }
 
